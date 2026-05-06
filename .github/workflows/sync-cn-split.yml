@@ -1,7 +1,6 @@
 name: 每日同步 CN Split Tunnels 到 Cloudflare Zero Trust
 permissions:
   contents: read
-  pull-requests: write
 
 on:
   schedule:

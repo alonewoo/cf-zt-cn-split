@@ -6,9 +6,13 @@ CF_API_TOKEN = os.getenv("CF_API_TOKEN")
 ACCOUNT_ID   = os.getenv("CF_ACCOUNT_ID")
 PROFILE_ID   = os.getenv("CF_PROFILE_ID", "")
 MODE         = os.getenv("MODE", "exclude")  # exclude=CN直连 | include=只有CN走WARP
+ALLOWED_MODES = {"exclude", "include"}
 
 if not all([CF_API_TOKEN, ACCOUNT_ID]):
     raise ValueError("缺少环境变量！请在 GitHub Secrets 设置 CF_API_TOKEN、CF_ACCOUNT_ID")
+
+if MODE not in ALLOWED_MODES:
+    raise ValueError(f"非法 MODE: {MODE}，只允许 {'/'.join(sorted(ALLOWED_MODES))}")
 
 HEADERS = {
     "Authorization": f"Bearer {CF_API_TOKEN}",
@@ -90,7 +94,7 @@ def update_split_tunnels(cidrs, domains):
     if resp.status_code in (200, 204):
         print(f"✅ 同步成功！{len(routes)} 条路由 | Mode: {MODE}")
     else:
-        print(f"❌ 失败 {resp.status_code}: {resp.text}")
+        print(f"❌ 失败 {resp.status_code}: Cloudflare API 请求未成功")
         resp.raise_for_status()
 
 
