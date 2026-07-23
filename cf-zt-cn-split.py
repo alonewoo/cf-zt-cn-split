@@ -39,7 +39,11 @@ PRIORITY_KEYWORDS: list[list[str]] = [
      "amap", "dingtalk", "youku", "iqiyi"],
     # 腾讯
     ["tencent", "qq", "weixin", "wechat", "wxpay", "qcloud",
-     "weiyun", "myqcloud", "gtimg", "qpic","qlogo"],
+     "weiyun", "myqcloud", "gtimg", "qpic"],
+    # 三大运营商
+    ["cmcc", "chinamobile", "10086",                          # 中国移动
+     "chinaunicom", "unicom", "10010", "wostore", "wlan",    # 中国联通
+     "chinatelecom", "189", "21cn", "ctexm", "bestv"],       # 中国电信
 ]
 
 # 域名：Loyalsoldier 精选直连域名
@@ -53,6 +57,60 @@ IP_URL = "https://raw.githubusercontent.com/soffchen/GeoIP2-CN/release/CN-ip-cid
 #   https://www.ipdeny.com/ipblocks/data/aggregated/cn-aggregated.zone
 # metowolf/iplist (~1700 条):
 #   https://raw.githubusercontent.com/metowolf/iplist/master/data/special/china.txt
+
+
+# ── IP 优先级网段（配额不足时，大厂/运营商地址段优先保留）─────────────────
+# 使用 overlaps() 判断聚合后的 CIDR 是否命中；按重要性分组，组序决定优先级
+# 数据来源：APNIC/CNNIC 公开 ASN 分配记录
+PRIORITY_IP_GROUPS: list[tuple[str, list[str]]] = [
+    ("国内大厂", [
+        # 阿里巴巴 / 阿里云 (ASN 37963, 45102, 134963)
+        "47.52.0.0/14", "47.88.0.0/13", "47.96.0.0/11",
+        "106.11.0.0/16", "116.62.0.0/16", "120.55.0.0/16",
+        "121.196.0.0/16", "140.205.0.0/16",
+        # 腾讯 / 腾讯云 (ASN 45090, 132203)
+        "43.138.0.0/15", "49.234.0.0/16", "101.32.0.0/14",
+        "118.24.0.0/16", "119.29.0.0/16", "175.27.0.0/16",
+        "203.205.0.0/16",
+        # 百度 (ASN 38365, 55967)
+        "106.12.0.0/16", "180.76.0.0/16", "220.181.0.0/16",
+        # 字节跳动 / 抖音 (ASN 138699, 55960)
+        "101.6.0.0/15", "59.82.0.0/16",
+        # 华为云 (ASN 55990)
+        "119.8.0.0/16", "121.37.0.0/16", "124.70.0.0/15",
+        # 京东云 (ASN 138915)
+        "101.124.0.0/16", "117.147.0.0/16",
+        # 网易 (ASN 4538)
+        "59.111.0.0/16", "223.252.192.0/18",
+        # 小米 (ASN 38473)
+        "111.13.0.0/16", "120.92.0.0/16",
+        # 美团 (ASN 138151)
+        "110.242.68.0/22",
+    ]),
+    ("三大运营商", [
+        # 中国电信 (ASN 4134, 4812)
+        "58.16.0.0/12", "61.128.0.0/10", "101.224.0.0/12",
+        "113.0.0.0/10", "117.0.0.0/11", "121.0.0.0/11",
+        "125.64.0.0/11", "202.96.0.0/11", "218.0.0.0/11",
+        # 中国联通 (ASN 4837, 17816)
+        "58.240.0.0/12", "61.148.0.0/14", "125.32.0.0/11",
+        "218.104.0.0/13", "221.0.0.0/11",
+        # 中国移动 (ASN 9808, 56040)
+        "117.128.0.0/10", "183.128.0.0/11",
+        "211.136.0.0/12", "218.200.0.0/13",
+    ]),
+]
+
+# 模块加载时预编译优先级网络对象，避免在排序时重复解析
+_PRIORITY_IP_NETS: list[list[ipaddress.IPv4Network]] = []
+for _label, _raw_cidrs in PRIORITY_IP_GROUPS:
+    _group_nets = []
+    for _cidr in _raw_cidrs:
+        try:
+            _group_nets.append(ipaddress.ip_network(_cidr, strict=False))
+        except ValueError:
+            pass
+    _PRIORITY_IP_NETS.append(_group_nets)
 
 
 # ── 需要始终保留的原始 split tunnel 规则（来自 Cloudflare 控制台截图）──────
@@ -92,8 +150,28 @@ def aggregate_cidrs(cidrs: list[str]) -> list[str]:
     return [str(net) for net in collapsed]
 
 
+def _priority_ip_level(cidr: str) -> int:
+    """
+    返回 CIDR 的优先级级别（越小越优先）。
+    与第 0 组（大厂）任意网段 overlaps → 返回 0；第 1 组（运营商）→ 返回 1；未命中 → 返回 len(PRIORITY_IP_GROUPS)。
+    """
+    try:
+        net = ipaddress.ip_network(cidr, strict=False)
+    except ValueError:
+        return len(PRIORITY_IP_GROUPS)
+    for level, group_nets in enumerate(_PRIORITY_IP_NETS):
+        if any(net.overlaps(pn) for pn in group_nets):
+            return level
+    return len(PRIORITY_IP_GROUPS)
+
+
+def sort_cidrs_by_priority(cidrs: list[str]) -> list[str]:
+    """将 CIDR 列表按大厂/运营商优先排序，配额不足时确保关键网段不被丢弃"""
+    return sorted(cidrs, key=_priority_ip_level)
+
+
 def get_cn_cidrs():
-    """从 GeoIP2-CN 拉取 CN CIDR 列表，并做最大化聚合"""
+    """从 GeoIP2-CN 拉取 CN CIDR 列表，做最大化聚合，并按大厂/运营商优先排序"""
     r = requests.get(IP_URL, timeout=30)
     r.raise_for_status()
     raw = [line.strip() for line in r.text.splitlines() if line.strip() and not line.startswith('#')]
@@ -101,7 +179,16 @@ def get_cn_cidrs():
 
     aggregated = aggregate_cidrs(raw)
     print(f"   聚合后剩余 {len(aggregated)} 条 CIDR（节省 {len(raw) - len(aggregated)} 条）")
-    return aggregated
+
+    sorted_cidrs = sort_cidrs_by_priority(aggregated)
+    priority_counts = [
+        sum(1 for c in sorted_cidrs if _priority_ip_level(c) == lvl)
+        for lvl in range(len(PRIORITY_IP_GROUPS))
+    ]
+    labels = [label for label, _ in PRIORITY_IP_GROUPS]
+    detail = " | ".join(f"{labels[i]} {priority_counts[i]} 条" for i in range(len(labels)))
+    print(f"   IP 优先段：{detail}")
+    return sorted_cidrs
 
 
 def _priority_level(domain: str) -> int:
@@ -163,8 +250,14 @@ def update_split_tunnels(cidrs, domains):
     # 最终路由 = 保留规则 + CN 域名 + CN IP
     routes = PRESERVED_RULES + domain_entries + ip_entries
 
-    priority_in_use = sum(1 for e in domain_entries if _priority_level(e["host"]) < len(PRIORITY_KEYWORDS))
-    print(f"   保留规则：{preserved_count} 条 | 域名规则：{len(domain_entries)} 条（优先域名 {priority_in_use} 条）| IP 规则：{len(ip_entries)} 条 | 合计：{len(routes)} 条")
+    domain_priority_count = sum(1 for e in domain_entries if _priority_level(e["host"]) < len(PRIORITY_KEYWORDS))
+    ip_priority_count     = sum(1 for e in ip_entries if _priority_ip_level(e["address"]) < len(PRIORITY_IP_GROUPS))
+    print(
+        f"   保留规则：{preserved_count} 条"
+        f" | 域名：{len(domain_entries)} 条（优先 {domain_priority_count} 条）"
+        f" | IP：{len(ip_entries)} 条（优先 {ip_priority_count} 条）"
+        f" | 合计：{len(routes)} 条"
+    )
 
     if len(routes) > MAX_RULES:
         print(f"⚠️  规则总数超出限制，已截断至 {MAX_RULES} 条")
