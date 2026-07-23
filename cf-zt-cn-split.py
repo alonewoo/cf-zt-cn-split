@@ -31,30 +31,30 @@ VALID_DOMAIN_RE = re.compile(r'^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)
 # 按重要性分组，同组内关键词等价；分组顺序决定优先级高低
 PRIORITY_KEYWORDS: list[list[str]] = [
     # 京东
-    ["jd", "jingdong", "360buy", "yiyaojd", "jdcloud", "jdl"],
+    ["jd.com", "jingdong", "360buy", "yiyaojd", "jdcloud"],
     # 蚂蚁 / 支付宝
     ["alipay", "antgroup", "antfin", "mybank", "zmxy"],
     # 淘宝 / 阿里
     ["taobao", "alibaba", "alicdn", "aliyun", "tmall", "1688",
-     "amap", "dingtalk", "youku", "iqiyi"],
+     "amap", "dingtalk", "youku", "iqiyi", "alipay"],
     # 腾讯
     ["tencent", "qq", "weixin", "wechat", "wxpay", "qcloud",
-     "weiyun", "myqcloud", "gtimg", "qpic"],
+     "weiyun", "myqcloud", "gtimg", "qpic", "qlogo"],
     # 三大运营商
     ["cmcc", "chinamobile", "10086",                          # 中国移动
      "chinaunicom", "unicom", "10010", "wostore", "wlan",    # 中国联通
-     "chinatelecom", "189", "21cn", "ctexm", "bestv"],       # 中国电信
+     "chinatelecom", "189", "21cn", "ctexm"],       # 中国电信
 ]
 
 # 域名唯一数据源：Loyalsoldier 精选直连域名
 DOMAIN_URL = "https://raw.githubusercontent.com/Loyalsoldier/surge-rules/release/direct.txt"
 
 # IP 唯一数据源：GeoIP2-CN
-IP_URL = "https://raw.githubusercontent.com/soffchen/GeoIP2-CN/release/CN-ip-cidr.txt"
+# IP_URL = "https://raw.githubusercontent.com/soffchen/GeoIP2-CN/release/CN-ip-cidr.txt"
 
 # 备用 IP 数据源（仅供参考，不启用）
 # IPdeny aggregated (~2200 条):
-#   https://www.ipdeny.com/ipblocks/data/aggregated/cn-aggregated.zone
+   https://www.ipdeny.com/ipblocks/data/aggregated/cn-aggregated.zone
 # metowolf/iplist (~1700 条):
 #   https://raw.githubusercontent.com/metowolf/iplist/master/data/special/china.txt
 
@@ -127,7 +127,6 @@ PRESERVED_RULES = [
     {"address": "240.0.0.0/4",          "description": ""},
     {"address": "224.0.0.0/24",         "description": ""},
     {"address": "192.168.0.0/16",       "description": ""},
-    {"address": "192.0.0.0/24",         "description": ""},
     {"address": "172.16.0.0/12",        "description": ""},
     {"address": "169.254.0.0/16",       "description": "DHCP Unspecified"},
     {"address": "100.64.0.0/10",        "description": ""},
