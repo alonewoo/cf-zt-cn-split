@@ -54,7 +54,7 @@ DOMAIN_URL = "https://raw.githubusercontent.com/Loyalsoldier/surge-rules/release
 
 # 备用 IP 数据源（仅供参考，不启用）
 # IPdeny aggregated (~2200 条):
-   https://www.ipdeny.com/ipblocks/data/aggregated/cn-aggregated.zone
+IP_URL = "https://www.ipdeny.com/ipblocks/data/aggregated/cn-aggregated.zone"
 # metowolf/iplist (~1700 条):
 #   https://raw.githubusercontent.com/metowolf/iplist/master/data/special/china.txt
 
