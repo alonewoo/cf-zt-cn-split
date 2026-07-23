@@ -20,9 +20,9 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
-# ── 限额：Cloudflare split tunnel 最多 900 条 ──────────────────────────────
-MAX_RULES       = 900
-TARGET_DOMAIN_N = 0  # 期望域名条数，剩余配额给 IP
+# ── 配额设置────────────────────────────────────────────────────────────────
+MAX_RULES        = 900   # Cloudflare split tunnel 最多 900 条
+MAX_DOMAIN_RULES = 950   # 域名配额上限（远大于 MAX_RULES，即"域名优先充满，剩余空间才给 IP"）
 
 # 合法域名正则：只保留标准域名格式，过滤脏数据
 VALID_DOMAIN_RE = re.compile(r'^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$')
@@ -46,13 +46,13 @@ PRIORITY_KEYWORDS: list[list[str]] = [
      "chinatelecom", "189", "21cn", "ctexm", "bestv"],       # 中国电信
 ]
 
-# 域名：Loyalsoldier 精选直连域名
+# 域名唯一数据源：Loyalsoldier 精选直连域名
 DOMAIN_URL = "https://raw.githubusercontent.com/Loyalsoldier/surge-rules/release/direct.txt"
 
-# IP：GeoIP2-CN
+# IP 唯一数据源：GeoIP2-CN
 IP_URL = "https://raw.githubusercontent.com/soffchen/GeoIP2-CN/release/CN-ip-cidr.txt"
 
-# 备用 IP 数据源
+# 备用 IP 数据源（仅供参考，不启用）
 # IPdeny aggregated (~2200 条):
 #   https://www.ipdeny.com/ipblocks/data/aggregated/cn-aggregated.zone
 # metowolf/iplist (~1700 条):
@@ -237,10 +237,10 @@ def get_cn_domains():
 def update_split_tunnels(cidrs, domains):
     # 保留规则占用的配额
     preserved_count = len(PRESERVED_RULES)
-    remaining       = MAX_RULES - preserved_count          # 可供 CN 规则使用的配额
+    remaining       = MAX_RULES - preserved_count    # 可供 CN 规则使用的配额
 
-    # 动态分配配额：域名取 TARGET_DOMAIN_N 条，剩余给 IP
-    max_domains = min(TARGET_DOMAIN_N, len(domains), remaining)
+    # 域名优先于 IP：先用尽域名配额（最多 MAX_DOMAIN_RULES 条），剩余才给 IP
+    max_domains = min(MAX_DOMAIN_RULES, remaining, len(domains))
     max_ips     = min(remaining - max_domains, len(cidrs))
 
     # 域名规则在前（DNS 层优先命中），IP 规则在后（网络层兜底）
