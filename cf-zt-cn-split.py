@@ -33,17 +33,17 @@ PRIORITY_KEYWORDS: list[list[str]] = [
     # 京东
     ["jd.com", "jingdong", "360buy", "yiyaojd", "jdcloud"],
     # 蚂蚁 / 支付宝
-    ["alipay", "antgroup", "antfin", "mybank", "zmxy"],
+    ["alipay", "antgroup", "antfin", "mybank", "smzdm"],
     # 淘宝 / 阿里
-    ["taobao", "alibaba", "alicdn", "aliyun", "tmall", "1688",
+    ["taobao", "alibaba", "alicdn", "aliyun", "tmall", "1688.com",
      "amap", "dingtalk", "youku", "iqiyi", "alipay"],
     # 腾讯
-    ["tencent", "qq", "weixin", "wechat", "wxpay", "qcloud",
+    ["tencent", "qq.com", "weixin", "wechat", "wxpay", "qcloud",
      "weiyun", "myqcloud", "gtimg", "qpic", "qlogo"],
     # 三大运营商
-    ["cmcc", "chinamobile", "10086",                          # 中国移动
-     "chinaunicom", "unicom", "10010", "wostore", "wlan",    # 中国联通
-     "chinatelecom", "189", "21cn", "ctexm"],       # 中国电信
+    ["cmcc.com", "chinamobile", "10086.com",                          # 中国移动
+     "chinaunicom", "unicom", "10010.com", "wostore", "wlan",    # 中国联通
+     "chinatelecom", "189.com", "ctexm"],       # 中国电信
 ]
 
 # 域名唯一数据源：Loyalsoldier 精选直连域名
