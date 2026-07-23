@@ -12,8 +12,8 @@ ACCOUNT_ID      = os.getenv("CF_ACCOUNT_ID", "").strip()
 PROFILE_ID      = os.getenv("CF_PROFILE_ID", "").strip()
 MODE            = os.getenv("MODE", "exclude")  # exclude=CN直连 | include=只有CN走WARP
 
-MAX_RULES       = int(os.getenv("MAX_RULES", "900"))          # [按你的参数调整]
-TARGET_DOMAIN_N = int(os.getenv("TARGET_DOMAIN_N", "100"))    # [按你的参数调整]
+MAX_RULES       = int(os.getenv("MAX_RULES", "4000"))          # [按你的参数调整]
+TARGET_DOMAIN_N = int(os.getenv("TARGET_DOMAIN_N", "1500"))    # [按你的参数调整]
 DOMAIN_FULL_COVERAGE = os.getenv("DOMAIN_FULL_COVERAGE", "0").strip() == "1"
 DRY_RUN         = os.getenv("DRY_RUN", "0").strip() == "1"
 ALLOWED_MODES   = {"exclude", "include"}
