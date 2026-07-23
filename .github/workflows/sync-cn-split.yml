@@ -11,10 +11,10 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: 设置 Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -27,4 +27,5 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_PROFILE_ID: ${{ secrets.CF_PROFILE_ID }}
           MODE: exclude                     # 可改成 include
-        run: python cf-zt-cn-split.py
+        # run: python cf-zt-cn-split.py
+        run: python cf-split.py
