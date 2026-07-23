@@ -40,7 +40,11 @@ Loyalsoldier/surge-rules (direct.txt)     soffchen/GeoIP2-CN (CN-ip-cidr.txt)
 用户访问未收录域名，IP 也未收录
   → 两层均未命中 → 走 WARP ⚠️（概率极低，可接受）
 ```
+1 域名保留的优先级比ip地址高
+2 取消域名保留数量TARGET_DOMAIN_N=100的限制，最大max_domains改为950
+3 域名和ip地址的来源需是DOMAIN_URL和IP_URL
 
+保留的域名优先保留京东、蚂蚁、支付宝、淘宝、腾讯相关的域名
 -----
 
 ## 前置要求
