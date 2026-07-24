@@ -21,36 +21,26 @@ HEADERS = {
 }
 
 # ── 配额设置────────────────────────────────────────────────────────────────
-MAX_RULES        = 4000   # Cloudflare split tunnel 最多 900 条（实际可能需要调整）
+MAX_RULES        = 4000   # Cloudflare split tunnel 最多 900 条
 MAX_DOMAIN_RULES = 1950   # 域名配额上限
 
-# 合法域名正则：只保留标准域名格式，过滤脏数据
+# 合法域名正则
 VALID_DOMAIN_RE = re.compile(r'^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$')
 
 # ── 域名黑名单关键词 ──────────────────────────────────────────────────────
-# 包含这些关键词的域名将被排除，防止仿冒/钓鱼/攻击性域名混入
 DOMAIN_BLACKLIST_KEYWORDS = [
-    # DDoS/攻击相关关键词
     "ddos", "attack", "hack", "exploit", "malware", "virus",
     "trojan", "spam", "phish", "fraud", "scam", "fake",
-    
-    # 非标准品牌组合（如 aliyunddos、vjianshen 等异常组合）
-    # 注意：这些不是真正的品牌域名，而是仿冒或无关域名
 ]
 
 # ── 域名精确黑名单 ────────────────────────────────────────────────────────
-# 完全匹配或后缀匹配的黑名单域名（不需要关键词模糊匹配的特定域名）
 DOMAIN_BLACKLIST_EXACT = [
-    "aliyunddos0003.com",      # 仿冒阿里云 + DDoS 字样
-    "vjianshen1688.com",       # 仿冒 1688 + 无关前缀
-    # 可以继续添加更多已知的仿冒域名
+    "aliyunddos0003.com",
+    "vjianshen1688.com",
 ]
 
-# ── 域名白名单校验规则 ────────────────────────────────────────────────────
-# 对于包含特定品牌关键词的域名，需要额外校验其是否属于合法的品牌域名
-# 格式: (品牌关键词, 允许的域名模式正则列表)
+# ── 域名白名单品牌校验规则 ────────────────────────────────────────────────
 DOMAIN_BRAND_VALIDATION = [
-    # 阿里系域名校验：包含 "ali" 的域名必须是已知的阿里系域名模式
     ("ali", [
         r'^.*\.alibaba\.com$',
         r'^.*\.aliyun\.com$',
@@ -67,7 +57,6 @@ DOMAIN_BRAND_VALIDATION = [
         r'^.*\.alibaba-inc\.com$',
         r'^.*\.alibabaus\.com$',
     ]),
-    # 京东系域名校验
     ("jd", [
         r'^.*\.jd\.com$',
         r'^.*\.jdcloud\.com$',
@@ -79,12 +68,10 @@ DOMAIN_BRAND_VALIDATION = [
         r'^.*\.jdwl\.com$',
         r'^.*\.jdhealth\.com$',
     ]),
-    # 1688 相关域名校验
     ("1688", [
         r'^.*\.1688\.com$',
         r'^.*\.1688\.net$',
     ]),
-    # 腾讯系域名校验
     ("tencent|qq|weixin|wechat|wxpay|qcloud", [
         r'^.*\.tencent\.com$',
         r'^.*\.qq\.com$',
@@ -97,7 +84,6 @@ DOMAIN_BRAND_VALIDATION = [
         r'^.*\.myqcloud\.com$',
         r'^.*\.weiyun\.com$',
     ]),
-    # 百度系域名校验
     ("baidu", [
         r'^.*\.baidu\.com$',
         r'^.*\.baidustatic\.com$',
@@ -107,7 +93,6 @@ DOMAIN_BRAND_VALIDATION = [
         r'^.*\.bcehost\.com$',
         r'^.*\.bcebos\.com$',
     ]),
-    # 字节跳动系域名校验
     ("bytedance|toutiao|douyin|tiktok", [
         r'^.*\.bytedance\.com$',
         r'^.*\.toutiao\.com$',
@@ -120,7 +105,6 @@ DOMAIN_BRAND_VALIDATION = [
     ]),
 ]
 
-# 预编译品牌域名正则
 _compiled_brand_patterns = {}
 for keywords_str, patterns in DOMAIN_BRAND_VALIDATION:
     keyword_list = [kw.strip() for kw in keywords_str.split('|')]
@@ -130,17 +114,24 @@ for keywords_str, patterns in DOMAIN_BRAND_VALIDATION:
             _compiled_brand_patterns[kw] = []
         _compiled_brand_patterns[kw].extend(compiled_patterns)
 
-# ── 域名优先级关键词（配额不足时，包含这些关键词的域名优先保留）────────────
+# ── 域名优先级关键词 ──────────────────────────────────────────────────────
 PRIORITY_KEYWORDS: list[list[str]] = [
-    ["jd.com", "jingdong", "360buy", "yiyaojd", "jdcloud"],
-    ["alipay", "antgroup", "antfin", "mybank", "zmxy"],
-    ["taobao", "alibaba", "alicdn", "aliyun", "tmall", "1688",
-     "amap", "dingtalk", "youku", "iqiyi"],
-    ["tencent", "qq", "weixin", "wechat", "wxpay", "qcloud",
-     "weiyun", "myqcloud", "gtimg", "qpic", "qlogo"],
-    ["cmcc", "chinamobile", "10086",
-     "chinaunicom", "unicom", "10010", "wostore", "wlan",
-     "chinatelecom", "189", "21cn", "ctexm"],
+    # 京东
+    ["jingdong", "yiyaojd", "jdcloud", "qianxun", "jdimg", "jdcdn.com", "360buyimg"],
+    # 蚂蚁 / 支付宝
+    ["alipay", "antgroup", "antfin", "mybank", "smzdm"],
+    # 淘宝 / 阿里
+    ["taobao", "alibaba", "alicdn", "aliyun", "tmall", "1688.com",
+     "amap", "iqiyi", "alipay", "ele.me", "elemecnd.com", "myqcloud.com"],
+    # 腾讯
+    ["tencent", "qq.com", "weixin", "wechat", "wxpay", "qcloud",
+     "weiyun", "myqcloud", "gtimg", "qpic", "qlogo", "v.qq.com"],
+    # 三大运营商
+    ["cmcc.com", "chinamobile", "10086.com",                          # 中国移动
+     "chinaunicom", "unicom", "10010.com",    # 中国联通
+     "chinatelecom", "189.com", "ctexm"],       # 中国电信
+    # 其他
+    ["taikang", "163.com", "163yun.com", "cnipa"],
 ]
 
 # 域名唯一数据源
@@ -177,7 +168,6 @@ PRIORITY_IP_GROUPS: list[tuple[str, list[str]]] = [
     ]),
 ]
 
-# 预编译优先级网络对象
 _PRIORITY_IP_NETS: list[list[ipaddress.IPv4Network]] = []
 for _label, _raw_cidrs in PRIORITY_IP_GROUPS:
     _group_nets = []
@@ -211,87 +201,44 @@ PRESERVED_RULES = [
 # ── 域名过滤函数 ──────────────────────────────────────────────────────────
 
 def is_domain_blacklisted(domain: str) -> bool:
-    """
-    检查域名是否在黑名单中。
-    返回 True 表示该域名应该被排除。
-    """
+    """检查域名是否在黑名单中"""
     domain_lower = domain.lower().lstrip('*.')
-    
-    # 1. 精确黑名单匹配
+
     for blacklisted in DOMAIN_BLACKLIST_EXACT:
         blacklisted_lower = blacklisted.lower()
-        # 完全匹配
         if domain_lower == blacklisted_lower:
             print(f"   🚫 黑名单精确匹配: {domain} -> 排除")
             return True
-        # 后缀匹配（如 *.vjianshen1688.com 匹配 vjianshen1688.com）
         if domain_lower.endswith('.' + blacklisted_lower):
             print(f"   🚫 黑名单后缀匹配: {domain} -> 排除")
             return True
-        # 前缀匹配（如 aliyunddos0003.com 匹配 *.aliyunddos0003.com）
         if blacklisted_lower.endswith('.' + domain_lower):
             print(f"   🚫 黑名单前缀匹配: {domain} -> 排除")
             return True
-    
-    # 2. 黑名单关键词检测
+
     for keyword in DOMAIN_BLACKLIST_KEYWORDS:
         keyword_lower = keyword.lower()
-        # 提取域名的主体部分（去掉 TLD）
         parts = domain_lower.split('.')
-        # 检查关键词是否出现在域名的任何部分
         for part in parts:
             if keyword_lower in part and len(part) > len(keyword_lower):
-                # 关键词不是域名部分的完整内容，而是嵌入的
                 print(f"   🚫 黑名单关键词({keyword})匹配: {domain} -> 排除")
                 return True
-    
+
     return False
 
 
 def is_domain_brand_valid(domain: str) -> bool:
-    """
-    检查包含品牌关键词的域名是否属于该品牌的合法域名。
-    例如：包含 "ali" 的域名必须是阿里系已知域名模式，否则排除。
-    返回 True 表示域名通过品牌校验。
-    """
+    """检查包含品牌关键词的域名是否属于合法品牌域名"""
     domain_lower = domain.lower().lstrip('*.')
-    
-    # 检查域名是否包含需要校验的品牌关键词
+
     for brand_keyword, patterns in _compiled_brand_patterns.items():
         if brand_keyword in domain_lower:
-            # 检查是否匹配任一允许的模式
             for pattern in patterns:
                 if pattern.match(domain_lower):
                     return True
-            # 包含品牌关键词但不匹配任何已知模式 -> 可能是仿冒域名
             print(f"   🚫 品牌校验失败: {domain} 包含 '{brand_keyword}' 但不匹配已知品牌域名模式 -> 排除")
             return False
-    
-    # 不包含任何需要校验的品牌关键词，通过
-    return True
 
-
-def validate_and_filter_domain(domain: str) -> bool:
-    """
-    综合域名校验：格式校验 + 黑名单检查 + 品牌校验。
-    返回 True 表示域名应该保留。
-    """
-    # 去掉通配符前缀进行校验
-    clean_domain = domain.lstrip('*.')
-    
-    # 1. 基本格式校验
-    if not VALID_DOMAIN_RE.match(clean_domain):
-        print(f"   ⚠️  格式非法: {domain}")
-        return False
-    
-    # 2. 黑名单检查
-    if is_domain_blacklisted(domain):
-        return False
-    
-    # 3. 品牌域名校验
-    if not is_domain_brand_valid(domain):
-        return False
-    
     return True
 
 
@@ -308,7 +255,7 @@ def aggregate_cidrs(cidrs: list[str]) -> list[str]:
 
 
 def _priority_ip_level(cidr: str) -> int:
-    """返回 CIDR 的优先级级别"""
+    """返回 CIDR 的优先级级别（越小越优先）"""
     try:
         net = ipaddress.ip_network(cidr, strict=False)
     except ValueError:
@@ -320,12 +267,12 @@ def _priority_ip_level(cidr: str) -> int:
 
 
 def sort_cidrs_by_priority(cidrs: list[str]) -> list[str]:
-    """将 CIDR 列表按优先级排序"""
+    """将 CIDR 列表按大厂/运营商优先排序"""
     return sorted(cidrs, key=_priority_ip_level)
 
 
 def get_cn_cidrs():
-    """从 GeoIP2-CN 拉取 CN CIDR 列表"""
+    """从 GeoIP2-CN 拉取 CN CIDR 列表，做最大化聚合，并按大厂/运营商优先排序"""
     print(f"   正在从 {IP_URL} 获取 IP 数据...")
     r = requests.get(IP_URL, timeout=30)
     r.raise_for_status()
@@ -340,7 +287,7 @@ def get_cn_cidrs():
     for lvl in range(len(PRIORITY_IP_GROUPS)):
         count = sum(1 for c in sorted_cidrs if _priority_ip_level(c) == lvl)
         priority_counts.append(count)
-    
+
     labels = [label for label, _ in PRIORITY_IP_GROUPS]
     detail_parts = []
     for i in range(len(labels)):
@@ -351,7 +298,10 @@ def get_cn_cidrs():
 
 
 def _priority_level(domain: str) -> int:
-    """返回域名的优先级级别"""
+    """
+    返回域名的优先级级别（越小越优先）。
+    命中第 0 组关键词 → 返回 0；命中第 1 组 → 返回 1；……未命中 → 返回 len(PRIORITY_KEYWORDS)。
+    """
     lower = domain.lower()
     for level, keywords in enumerate(PRIORITY_KEYWORDS):
         if any(kw in lower for kw in keywords):
@@ -360,16 +310,16 @@ def _priority_level(domain: str) -> int:
 
 
 def sort_domains_by_priority(domains: list[str]) -> list[str]:
-    """将域名列表按优先级排序"""
+    """将域名列表按优先级排序：关键业务域名排在前面"""
     return sorted(domains, key=_priority_level)
 
 
 def get_cn_domains():
-    """从 Loyalsoldier/surge-rules 拉取 CN 域名列表，并执行严格校验过滤"""
+    """从 Loyalsoldier/surge-rules 拉取 CN 域名列表，过滤非法域名，并按优先级排序"""
     print(f"   正在从 {DOMAIN_URL} 获取域名数据...")
     r = requests.get(DOMAIN_URL, timeout=30)
     r.raise_for_status()
-    
+
     domains = []
     rejected_count = 0
     rejected_reasons = {
@@ -377,7 +327,7 @@ def get_cn_domains():
         "blacklist": 0,
         "brand_fail": 0,
     }
-    
+
     for line in r.text.splitlines():
         line = line.strip()
         if not line or line.startswith('#'):
@@ -385,15 +335,13 @@ def get_cn_domains():
         if line.startswith('DOMAIN-SUFFIX,'):
             line = line.replace('DOMAIN-SUFFIX,', '').strip()
         line = line.lstrip('.')
-        
+
         if not line:
             continue
-        
-        # 构造通配符域名格式
+
         domain_with_wildcard = f"*.{line}"
-        
-        # 执行校验
         clean_domain = line
+
         if VALID_DOMAIN_RE.match(clean_domain):
             if is_domain_blacklisted(line) or is_domain_blacklisted(domain_with_wildcard):
                 rejected_count += 1
@@ -407,43 +355,70 @@ def get_cn_domains():
         else:
             rejected_count += 1
             rejected_reasons["format"] += 1
-    
+
     unique = list(set(domains))
     sorted_domains = sort_domains_by_priority(unique)
     priority_count = sum(1 for d in sorted_domains if _priority_level(d) < len(PRIORITY_KEYWORDS))
-    
+
     print(f"   域名数据源获取到 {len(sorted_domains)} 条有效域名")
     print(f"   已过滤 {rejected_count} 条无效/黑名单域名")
     print(f"   过滤详情: 格式非法 {rejected_reasons['format']} | "
           f"黑名单 {rejected_reasons['blacklist']} | "
           f"品牌校验失败 {rejected_reasons['brand_fail']}")
     print(f"   其中优先域名 {priority_count} 条")
-    
+
     return sorted_domains
 
 
+def get_priority_domains(domains: list[str]) -> list[str]:
+    """从排序后的域名列表中提取优先域名（命中任意优先关键词组的域名）"""
+    return [d for d in domains if _priority_level(d) < len(PRIORITY_KEYWORDS)]
+
+
+def get_priority_ips(cidrs: list[str]) -> list[str]:
+    """从排序后的 IP 列表中提取优先 IP（命中大厂或运营商网段的 IP）"""
+    return [c for c in cidrs if _priority_ip_level(c) < len(PRIORITY_IP_GROUPS)]
+
+
 def update_split_tunnels(cidrs, domains):
-    """更新 Cloudflare Zero Trust split tunnel 规则"""
+    """
+    更新 Cloudflare Zero Trust split tunnel 规则。
+    最终写入仅包含：保留规则 + 优先域名 + 优先 IP
+    """
     preserved_count = len(PRESERVED_RULES)
+
+    # 提取优先域名和优先 IP
+    priority_domains = get_priority_domains(domains)
+    priority_ips = get_priority_ips(cidrs)
+
+    # 配额约束：优先域名 + 优先 IP 不超过剩余配额
     remaining = MAX_RULES - preserved_count
+    max_domains = min(MAX_DOMAIN_RULES, remaining, len(priority_domains))
+    max_ips = min(remaining - max_domains, len(priority_ips))
 
-    max_domains = min(MAX_DOMAIN_RULES, remaining, len(domains))
-    max_ips = min(remaining - max_domains, len(cidrs))
+    # 构建规则条目
+    domain_entries = [{"host": d, "description": "CN Domain"}
+                      for d in priority_domains[:max_domains]]
+    ip_entries = [{"address": cidr, "description": "CN IP"}
+                  for cidr in priority_ips[:max_ips]]
 
-    domain_entries = [{"host": d, "description": "CN Domain"} for d in domains[:max_domains]]
-    ip_entries = [{"address": cidr, "description": "CN IP"} for cidr in cidrs[:max_ips]]
-
+    # 最终路由 = 保留规则 + 优先域名 + 优先 IP
     routes = PRESERVED_RULES + domain_entries + ip_entries
 
-    domain_priority_count = sum(1 for e in domain_entries if _priority_level(e["host"]) < len(PRIORITY_KEYWORDS))
-    ip_priority_count = sum(1 for e in ip_entries if _priority_ip_level(e["address"]) < len(PRIORITY_IP_GROUPS))
-    
-    print(
-        f"   保留规则：{preserved_count} 条"
-        f" | 域名：{len(domain_entries)} 条（优先 {domain_priority_count} 条）"
-        f" | IP：{len(ip_entries)} 条（优先 {ip_priority_count} 条）"
-        f" | 合计：{len(routes)} 条"
-    )
+    # 统计信息
+    total_domains = len(domains)
+    total_ips = len(cidrs)
+    non_priority_domains = total_domains - len(priority_domains)
+    non_priority_ips = total_ips - len(priority_ips)
+
+    print(f"\n   ── 规则构成 ──")
+    print(f"   保留规则：{preserved_count} 条")
+    print(f"   优先域名：{len(priority_domains)} 条 → 实际写入 {len(domain_entries)} 条")
+    print(f"   优先 IP：{len(priority_ips)} 条 → 实际写入 {len(ip_entries)} 条")
+    print(f"   合计写入：{len(routes)} 条")
+    print(f"   ── 未写入 ──")
+    print(f"   非优先域名：{non_priority_domains} 条（已排除）")
+    print(f"   非优先 IP：{non_priority_ips} 条（已排除）")
 
     if len(routes) > MAX_RULES:
         print(f"⚠️  规则总数超出限制，已截断至 {MAX_RULES} 条")
@@ -454,8 +429,8 @@ def update_split_tunnels(cidrs, domains):
         url = f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/devices/policy/{PROFILE_ID}/{MODE}"
     else:
         url = f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/devices/policy/{MODE}"
-    
-    print(f"   API URL: {url}")
+
+    print(f"\n   API URL: {url}")
     print(f"   准备更新 {len(routes)} 条规则...")
 
     try:
@@ -463,7 +438,11 @@ def update_split_tunnels(cidrs, domains):
         if resp.status_code in (200, 204):
             print(f"✅ 同步成功！{len(routes)} 条路由 | Mode: {MODE}")
         else:
-            error_msg = resp.json() if resp.headers.get('content-type', '').startswith('application/json') else resp.text
+            content_type = resp.headers.get('content-type', '')
+            if 'application/json' in content_type:
+                error_msg = resp.json()
+            else:
+                error_msg = resp.text[:500]
             print(f"❌ 失败 {resp.status_code}: {error_msg}")
             resp.raise_for_status()
     except requests.exceptions.RequestException as e:
