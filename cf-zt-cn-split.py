@@ -22,7 +22,7 @@ HEADERS = {
 
 # ── 配额设置────────────────────────────────────────────────────────────────
 MAX_RULES        = 4000   # Cloudflare split tunnel 最多 900 条
-MAX_DOMAIN_RULES = 1550   # 域名配额上限（即"域名优先充满，剩余空间才给 IP"）
+MAX_DOMAIN_RULES = 1180   # 域名配额上限（即"域名优先充满，剩余空间才给 IP"）
 
 # 合法域名正则：只保留标准域名格式，过滤脏数据
 VALID_DOMAIN_RE = re.compile(r'^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$')
@@ -31,19 +31,22 @@ VALID_DOMAIN_RE = re.compile(r'^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)
 # 按重要性分组，同组内关键词等价；分组顺序决定优先级高低
 PRIORITY_KEYWORDS: list[list[str]] = [
     # 京东
-    ["jd.com", "jingdong", "360buy", "yiyaojd", "jdcloud"],
+    ["jd.com", "jingdong", "yiyaojd", "jdcloud", "qianxun", "jdimg", "jdcdn.com", "360buyimg"],
     # 蚂蚁 / 支付宝
     ["alipay", "antgroup", "antfin", "mybank", "smzdm"],
     # 淘宝 / 阿里
     ["taobao", "alibaba", "alicdn", "aliyun", "tmall", "1688.com",
-     "amap", "dingtalk", "youku", "iqiyi", "alipay"],
+     "amap", "iqiyi", "alipay", "ele.me", "elemecnd.com", "myqcloud.com"],
+    #  "dingtalk", "youku", "wostore", "wlan", 
     # 腾讯
     ["tencent", "qq.com", "weixin", "wechat", "wxpay", "qcloud",
-     "weiyun", "myqcloud", "gtimg", "qpic", "qlogo"],
+     "weiyun", "myqcloud", "gtimg", "qpic", "qlogo", "v.qq.com"],
     # 三大运营商
     ["cmcc.com", "chinamobile", "10086.com",                          # 中国移动
-     "chinaunicom", "unicom", "10010.com", "wostore", "wlan",    # 中国联通
+     "chinaunicom", "unicom", "10010.com",    # 中国联通
      "chinatelecom", "189.com", "ctexm"],       # 中国电信
+    # 其他
+     ["taikang", "163.com", "163yun.com", "cnipa"],      
 ]
 
 # 域名唯一数据源：Loyalsoldier 精选直连域名
@@ -54,9 +57,9 @@ DOMAIN_URL = "https://raw.githubusercontent.com/Loyalsoldier/surge-rules/release
 
 # 备用 IP 数据源（仅供参考，不启用）
 # IPdeny aggregated (~2200 条):
-IP_URL = "https://www.ipdeny.com/ipblocks/data/aggregated/cn-aggregated.zone"
+# IP_URL = "https://www.ipdeny.com/ipblocks/data/aggregated/cn-aggregated.zone"
 # metowolf/iplist (~1700 条):
-#   https://raw.githubusercontent.com/metowolf/iplist/master/data/special/china.txt
+IP_URL = "https://raw.githubusercontent.com/metowolf/iplist/master/data/special/china.txt"
 
 
 # ── IP 优先级网段（配额不足时，大厂/运营商地址段优先保留）─────────────────
