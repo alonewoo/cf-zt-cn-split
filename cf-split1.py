@@ -142,7 +142,7 @@ PRIORITY_KEYWORDS: list[list[str]] = [
      "chinatelecom", "189", "ctexm"],       # 中国电信
     # 其他
     ["taikang", "163", "163yun", "cnipa", "baidu", "baidustatic", "baidupcs", "bdimg", "bdstatic",
-     "bytedance", "toutiao", "douyin", "tiktok", "byteimg", "pstatp", "snssdk", "zijieapi",
+     "bytedance", "toutiao", "douyin", "tiktok", "byteimg", "pstatp", "snssdk", "zijieapi","cnipa.gov.cn"
      ],
 ]
 
