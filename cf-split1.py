@@ -103,6 +103,16 @@ DOMAIN_BRAND_VALIDATION = [
         r'^.*\.snssdk\.com$',
         r'^.*\.zijieapi\.com$',
     ]),
+    ("163", [
+        r'^.*\.163\.com$',
+        r'^.*\.yun163\.com$',
+        r'^.*\.163yun\.com$',
+    ]),
+    ("10086", [
+        r'^.*\.10086\.com$',
+        r'^.*\.189\.com$',
+        r'^.*\.10010\.com$',
+    ]),
 ]
 
 _compiled_brand_patterns = {}
@@ -117,7 +127,7 @@ for keywords_str, patterns in DOMAIN_BRAND_VALIDATION:
 # ── 域名优先级关键词 ──────────────────────────────────────────────────────
 PRIORITY_KEYWORDS: list[list[str]] = [
     # 京东
-    ["jingdong", "yiyaojd", "jdcloud", "qianxun", "jdimg", "jdcdn.com", "360buyimg"],
+    ["jd","jingdong", "yiyaojd", "jdcloud", "qianxun", "jdimg", "jdcdn.com", "360buyimg"],
     # 蚂蚁 / 支付宝
     ["alipay", "antgroup", "antfin", "mybank", "smzdm"],
     # 淘宝 / 阿里
@@ -127,11 +137,13 @@ PRIORITY_KEYWORDS: list[list[str]] = [
     ["tencent", "qq.com", "weixin", "wechat", "wxpay", "qcloud",
      "weiyun", "myqcloud", "gtimg", "qpic", "qlogo", "v.qq.com"],
     # 三大运营商
-    ["cmcc.com", "chinamobile", "10086.com",                          # 中国移动
-     "chinaunicom", "unicom", "10010.com",    # 中国联通
-     "chinatelecom", "189.com", "ctexm"],       # 中国电信
+    ["cmcc.com", "chinamobile", "10086",                          # 中国移动
+     "chinaunicom", "unicom", "10010",    # 中国联通
+     "chinatelecom", "189", "ctexm"],       # 中国电信
     # 其他
-    ["taikang", "163.com", "163yun.com", "cnipa"],
+    ["taikang", "163", "163yun", "cnipa", "baidu", "baidustatic", "baidupcs", "bdimg", "bdstatic",
+     "bytedance", "toutiao", "douyin", "tiktok", "byteimg", "pstatp", "snssdk", "zijieapi",
+     ],
 ]
 
 # 域名唯一数据源
