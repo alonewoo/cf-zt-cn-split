@@ -31,13 +31,13 @@ VALID_DOMAIN_RE = re.compile(r'^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)
 # 按重要性分组，同组内关键词等价；分组顺序决定优先级高低
 PRIORITY_KEYWORDS: list[list[str]] = [
     # 京东
-    ["jd.com", "jingdong", "yiyaojd", "jdcloud", "qianxun", "jdimg", "jdcdn.com", "360buyimg"],
+    ["jingdong", "yiyaojd", "jdcloud", "qianxun", "jdimg", "jdcdn.com", "360buyimg"],
     # 蚂蚁 / 支付宝
     ["alipay", "antgroup", "antfin", "mybank", "smzdm"],
     # 淘宝 / 阿里
     ["taobao", "alibaba", "alicdn", "aliyun", "tmall", "1688.com",
      "amap", "iqiyi", "alipay", "ele.me", "elemecnd.com", "myqcloud.com"],
-    #  "dingtalk", "youku", "wostore", "wlan", 
+    #  "dingtalk", "youku", "wostore", "wlan", "jd.com", 
     # 腾讯
     ["tencent", "qq.com", "weixin", "wechat", "wxpay", "qcloud",
      "weiyun", "myqcloud", "gtimg", "qpic", "qlogo", "v.qq.com"],
@@ -134,6 +134,7 @@ PRESERVED_RULES = [
     {"address": "169.254.0.0/16",       "description": "DHCP Unspecified"},
     {"address": "100.64.0.0/10",        "description": ""},
     {"address": "10.0.0.0/8",           "description": ""},
+    {"host":    "*.jd.com",             "description": ""},
 ]
 
 
