@@ -1,0 +1,76 @@
+name: Update Cloudflare Split Tunnel Rules
+
+on:
+  # 手动触发
+  workflow_dispatch:
+  # 定时触发：每天 UTC 03:00（北京时间 11:00）
+  # schedule:
+  #   - cron: '0 3 * * *'
+
+# 允许推送文件到仓库
+permissions:
+  contents: write
+
+jobs:
+  # ─────────────────────────────────────
+  # Job 1: 生成规则并上传到 GitHub
+  # ─────────────────────────────────────
+  generate:
+    name: Generate Rules (Script A)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Run Script A - Generate & Upload
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GITHUB_REPO: ${{ secrets.GITHUB_REPO }}
+          GITHUB_BRANCH: ${{ secrets.GITHUB_BRANCH }}
+          VERBOSE: '1'
+        run: |
+          python generate_rules.py
+
+  # ─────────────────────────────────────
+  # Job 2: 从 GitHub 读取规则写入 Cloudflare
+  # 依赖 Job 1 完成
+  # ─────────────────────────────────────
+  apply:
+    name: Apply Rules to Cloudflare (Script B)
+    runs-on: ubuntu-latest
+    needs: generate
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Run Script B - Apply to Cloudflare
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_PROFILE_ID: ${{ secrets.CF_PROFILE_ID }}
+          MODE: ${{ secrets.MODE }}
+          GITHUB_RAW_URL: ${{ secrets.GITHUB_RAW_URL }}
+        run: |
+          python apply_rules.py
