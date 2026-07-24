@@ -27,5 +27,5 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_PROFILE_ID: ${{ secrets.CF_PROFILE_ID }}
           MODE: exclude                     # 可改成 include
-        run: python cf-zt-cn-split.py
-        # run: python cf-split.py
+        # run: python cf-zt-cn-split.py
+        run: python cf-split1.py
