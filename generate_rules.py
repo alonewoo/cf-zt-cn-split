@@ -395,11 +395,11 @@ def main():
 
     # 4. 拉取 ASN IP 前缀
     # ip_entries = fetch_asn_prefixes()
-    ip_entries = ""
+    ip_entries = []
 
     # 5. 拼接最终规则: 保留规则 + 域名清单 b + IP 清单
     print("\n  拼接最终规则...")
-    # final_rules = PRESERVED_RULES + domains_b + ip_entries
+    final_rules = PRESERVED_RULES + domains_b + ip_entries
     print(f"  保留规则:  {len(PRESERVED_RULES):>6} 条")
     print(f"  域名规则:  {len(domains_b):>6} 条")
     print(f"  IP 规则:   {len(ip_entries):>6} 条")
