@@ -184,56 +184,52 @@ def fetch_cn_domains():
     return unique
 
 
-# def fetch_asn_prefixes():
-#     """
+def fetch_asn_prefixes():
+#    """
 #     通过 RIPEstat Data API 获取各 ASN 的 IPv4 广播前缀
 #     API 端点: /data/announced-prefixes/data.json?resource=AS{asn}
 #     """
-#     print("  [4/4] 拉取 ASN IP 前缀 (RIPEstat)...")
-#     ip_entries = []
-#     seen = set()
-# 
-#     for company, asns in COMPANY_ASNS.items():
-#         for asn in asns:
-#             url = f"{RIPESTAT_BASE}?resource=AS{asn}"
-#             try:
-#                 r = requests.get(url, timeout=TIMEOUT)
-#                 r.raise_for_status()
-#                 data = r.json()
-#                 prefixes = data.get("data", {}).get("prefixes", [])
+    print("  [4/4] 拉取 ASN IP 前缀 (RIPEstat)...")
+    ip_entries = []
+    seen = set()
+ 
+    for company, asns in COMPANY_ASNS.items():
+        for asn in asns:
+            url = f"{RIPESTAT_BASE}?resource=AS{asn}"
+            try:
+                r = requests.get(url, timeout=TIMEOUT)
+                r.raise_for_status()
+                data = r.json()
+                prefixes = data.get("data", {}).get("prefixes", [])
 
-#                 count = 0
-#                 for item in prefixes:
-#                     prefix = item.get("prefix", "")
-# #                     if not prefix or prefix in seen:
-#                         continue
+                count = 0
+                for item in prefixes:
+                    prefix = item.get("prefix", "")
+                      if not prefix or prefix in seen:
+                         continue
 
                     # 仅保留 IPv4 前缀（IPv6 前缀数量过大，保留规则已覆盖关键 IPv6 段）
-#                     try:
-#                         net = ipaddress.ip_network(prefix, strict=False)
- #                        if net.version != 4:
-#                             continue
-#                     except ValueError:
-#                         continue
+                    try:
+                       net = ipaddress.ip_network(prefix, strict=False)
+                        if net.version != 4:
+                            continue
+                    except ValueError:
+                        continue
 
-#                     seen.add(prefix)
-#                     ip_entries.append({
-#                         "address": prefix,
-#                         "description": f"{company} IP"
-#                     })
-#                     count += 1
-
-#                 print(f"        AS{asn} ({company}): {count} 条 IPv4 前缀")
-#             except Exception as e:
-#                 print(f"        AS{asn} ({company}): 获取失败 - {e}")
-
-#             time.sleep(0.5)  # RIPEstat 速率控制
-
-#     print(f"        IP 清单合计: {len(ip_entries)} 条（已去重）")
-#     if len(ip_entries) + len(PRESERVED_RULES) > 4000:
-#         print(f"  ⚠  IP 前缀数量较多，脚本 B 写入 Cloudflare 时将截断至 4000 条")
-#     return ip_entries
-
+                    seen.add(prefix)
+                    ip_entries.append({
+                        "address": prefix,
+                        "description": f"{company} IP"
+                    })
+                    count += 1
+                 print(f"        AS{asn} ({company}): {count} 条 IPv4 前缀")
+            except Exception as e:
+                print(f"        AS{asn} ({company}): 获取失败 - {e}")
+             time.sleep(0.5)  # RIPEstat 速率控制
+     print(f"        IP 清单合计: {len(ip_entries)} 条（已去重）")
+    if len(ip_entries) + len(PRESERVED_RULES) > 4000:
+        print(f"  ⚠  IP 前缀数量较多，脚本 B 写入 Cloudflare 时将截断至 4000 条")
+    return ip_entries
 
 # ════════════════════════════════════════════
 # 域名过滤
@@ -377,7 +373,7 @@ def main():
     domains_b = validate_domains_phase_b(domains_a)
 
     # 4. 拉取 ASN IP 前缀
-    ip_entries = fetch_asn_prefixes()
+    # ip_entries = fetch_asn_prefixes()
 
     # 5. 拼接最终规则: 保留规则 + 域名清单 b + IP 清单
     print("\n  拼接最终规则...")
