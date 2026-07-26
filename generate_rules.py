@@ -66,6 +66,8 @@ COMPANY_ROOT_DOMAINS = {
         "360buy.com", "360buyimg.com", "jdcloud.com",
         "jcloud.com", "jdpay.com", "jingxi.com",
         "paipai.com", "jddglobal.com", "jdcloudcs.com",
+        "jdimg.com",       # 新增
+        "jdcdn.com",       # 新增
     ],
     "蚂蚁/支付宝": [
         "alibaba.com", "alicdn.com", "aliyun.com", "aliyuncs.com",
@@ -77,6 +79,11 @@ COMPANY_ROOT_DOMAINS = {
         "amap.com", "autonavi.com", "dingtalk.com",
         "fliggy.com", "alitrip.com", "etao.com",
         "aliyunddos.com",
+        "alibabadns.com",   # 新增
+        "ele.me",           # 新增
+        "elemecdn.com",     # 新增
+        "antfin.com",       # 新增
+        "alipay.com.cn",    # 新增
     ],
     "腾讯": [
         "tencent.com", "qq.com", "qcloud.com", "weixin.com",
@@ -87,12 +94,17 @@ COMPANY_ROOT_DOMAINS = {
         "tencent-cloud.cn", "tencdns.net", "tencdns.com",
         "tencentcloud.com", "qpic.com", "tencentyun.com",
         "tcdnns.com", "qcloudtest.com",
+        "servicewechat.com",    # 新增
+        "weixinbridge.com",    # 新增
+        "tenpay.com",          # 新增
+        "tencent-cloud.net",   # 新增
     ],
     "网易": [
         "netease.com", "163.com", "126.com", "127.com",
         "126.net", "163.net", "neteaseim.com", "yunxin.com",
         "youdao.com", "163mail.com", "163mail.net",
         "neteaseinc.com", "neteasecdn.com",
+        "163yun.com",          # 新增
     ],
     "字节跳动": [
         "bytedance.com", "bytedns.com", "bytedance.net",
@@ -117,7 +129,15 @@ COMPANY_ROOT_DOMAINS = {
         "chinamobile.cn", "10086.cn", "chinamobile.com",
         "10086.com", "cmcc.com", "miguvideo.com", "migu.cn",
     ],
+    # 新增分组：银行/保险/政府（如需保留）
+    "银行/保险/政府": [
+        "taikang.com", "taikanglife.com",
+        "chinabank.com.cn", "abchina.com", "boc.cn",
+        "bankofchina.com", "cmbchina.com", "cebbank.com",
+        "cgbchina.com.cn", "cnipa.gov.cn",
+    ],
 }
+
 
 # ── 大厂及运营商 ASN 列表 ──
 COMPANY_ASNS = {
@@ -133,16 +153,17 @@ COMPANY_ASNS = {
 
 # ── 域名关键词（用于清单 a 宽泛匹配）──
 COMPANY_KEYWORDS = {
-    "京东":        ["jd", "jingdong", "360buy", "jdcloud", "jcloud", "paipai", "jingxi"],
     "蚂蚁/支付宝": ["alipay", "ant", "alibaba", "aliyun", "taobao", "tmall",
-                   "alicdn", "1688", "dingtalk", "amap", "autonavi", "fliggy"],
+                   "alicdn", "1688", "dingtalk", "amap", "autonavi", "fliggy",
+                   "alibabadns", "ele", "elemecdn", "antfin"],
     "腾讯":        ["tencent", "qq", "weixin", "wechat", "qcloud", "gtimg",
-                   "qpic", "qlogo", "dnspod", "tencentmusic"],
-    "网易":        ["netease", "163", "126", "youdao"],
-    "字节跳动":    ["bytedance", "douyin", "toutiao", "feishu", "volcengine",
-                   "pstatp", "snssdk", "lark"],
-    "运营商":      ["chinaunicom", "chinatelecom", "chinamobile", "10010",
-                   "10086", "189", "unicom", "cmcc"],
+                   "qpic", "qlogo", "dnspod", "tencentmusic",
+                   "servicewechat", "weixinbridge", "tenpay"],
+    "京东":        ["jd", "jingdong", "360buy", "jdcloud", "jcloud", "paipai", "jingxi",
+                   "jdimg", "jdcdn"],
+    "网易":        ["netease", "163", "126", "youdao", "163yun"],
+    "银行/保险":   ["taikang", "chinabank", "abchina", "boc", "bankofchina",
+                   "cmbchina", "cebbank", "cgbchina", "cnipa"],
 }
 
 VALID_DOMAIN_RE = re.compile(
