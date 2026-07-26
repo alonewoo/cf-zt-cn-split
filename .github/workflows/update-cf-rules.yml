@@ -2,8 +2,8 @@ name: Update Cloudflare Split Tunnel Rules
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 3 * * *'
+#   schedule:
+#     - cron: '0 3 * * *'
 
 permissions:
   contents: write
