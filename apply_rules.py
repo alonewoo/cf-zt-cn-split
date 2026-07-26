@@ -256,8 +256,7 @@ def main():
     # 步骤 5：写入 Fallback Domains（域名去通配符 + DNS 223.5.5.5）
     update_fallback_domains(fallback_rules)
 
-    print("
-  脚本 B 执行完毕。")
+    print("\n  脚本 B 执行完毕。")
 
 
 if __name__ == "__main__":
