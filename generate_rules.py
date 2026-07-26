@@ -395,7 +395,7 @@ def main():
 
     # 4. 拉取 ASN IP 前缀
     # ip_entries = fetch_asn_prefixes()
-    ip_entries = “”
+    ip_entries = ""
 
     # 5. 拼接最终规则: 保留规则 + 域名清单 b + IP 清单
     print("\n  拼接最终规则...")
