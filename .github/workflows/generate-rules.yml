@@ -1,0 +1,36 @@
+# .github/workflows/generate-rules.yml
+name: Generate Rules
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '0 3 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    name: Generate Rules (Script A)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Script A - Generate & Upload
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GITHUB_REPO: ${{ secrets.REPO_NAME }}
+          GITHUB_BRANCH: ${{ secrets.REPO_BRANCH }}
+          VERBOSE: '1'
+        run: python generate_rules.py
