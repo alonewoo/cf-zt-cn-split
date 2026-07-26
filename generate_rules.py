@@ -10,12 +10,11 @@
 环境变量：
   GITHUB_TOKEN   - GitHub Personal Access Token（需 repo 权限）
   GITHUB_REPO    - 仓库地址，格式 owner/repo
-  GITHUB_BRANCH  - 目标分支，默认 main
+  GITHUB_BRANCH  - 目标分支，留空则自动获取默认分支
 
 数据来源：
   域名 → Loyalsoldier/surge-rules  direct.txt
   IP   → RIPEstat Data API（按 ASN 查询广播前缀）
-         （bgpview.io 已于 2025-11-26 永久关闭，改用 RIPEstat）
 """
 
 import requests
@@ -31,12 +30,12 @@ from datetime import datetime, timezone
 # 配置区
 # ════════════════════════════════════════════
 
-GITHUB_TOKEN   = os.getenv("GITHUB_TOKEN", "")
-GITHUB_REPO    = os.getenv("GITHUB_REPO", "")        # owner/repo
-GITHUB_BRANCH  = os.getenv("GITHUB_BRANCH", "main")
+GITHUB_TOKEN     = os.getenv("GITHUB_TOKEN", "")
+GITHUB_REPO      = os.getenv("GITHUB_REPO", "")
+GITHUB_BRANCH    = os.getenv("GITHUB_BRANCH", "")  # 留空则自动获取默认分支
 GITHUB_FILE_PATH = "cf_spilit_channel.txt"
 
-DOMAIN_URL = "https://raw.githubusercontent.com/Loyalsoldier/surge-rules/release/direct.txt"
+DOMAIN_URL    = "https://raw.githubusercontent.com/Loyalsoldier/surge-rules/release/direct.txt"
 RIPESTAT_BASE = "https://stat.ripe.net/data/announced-prefixes/data.json"
 
 TIMEOUT = 30
@@ -60,8 +59,7 @@ PRESERVED_RULES = [
     {"address": "10.0.0.0/8",           "description": ""},
 ]
 
-# ── 大厂及运营商域名根域表（用于 list b 校验）──
-# 仅当域名精确等于根域，或以 .root 结尾时才视为有效
+# ── 大厂及运营商域名根域表（用于清单 b 校验）──
 COMPANY_ROOT_DOMAINS = {
     "京东": [
         "jd.com", "jd.hk", "jd.co", "jingdong.com",
@@ -70,7 +68,6 @@ COMPANY_ROOT_DOMAINS = {
         "paipai.com", "jddglobal.com", "jdcloudcs.com",
     ],
     "蚂蚁/支付宝": [
-        # Alibaba 生态（蚂蚁/支付宝/阿里云/淘宝系）
         "alibaba.com", "alicdn.com", "aliyun.com", "aliyuncs.com",
         "alibabacloud.com", "taobao.com", "taobao.org",
         "tmall.com", "tmall.hk", "1688.com",
@@ -79,7 +76,7 @@ COMPANY_ROOT_DOMAINS = {
         "antchain.net", "alikatech.com",
         "amap.com", "autonavi.com", "dingtalk.com",
         "fliggy.com", "alitrip.com", "etao.com",
-        "aliyunddos.com",   # 不含 aliyunddos0003 等变体
+        "aliyunddos.com",
     ],
     "腾讯": [
         "tencent.com", "qq.com", "qcloud.com", "weixin.com",
@@ -124,17 +121,17 @@ COMPANY_ROOT_DOMAINS = {
 
 # ── 大厂及运营商 ASN 列表 ──
 COMPANY_ASNS = {
-    "阿里云":      [37963, 45102],
-    "腾讯云":      [45090, 133478, 132203],
-    "京东云":      [55966, 136800],
-    "字节跳动":    [396986, 138699],
-    "网易":        [45062],
-    "中国电信":    [4134, 4809, 4811, 4812, 4813, 4816, 4835, 23724, 4847, 58543],
-    "中国联通":    [4837, 10099, 9929, 4808, 17621, 17622, 17623, 17816],
-    "中国移动":    [9808, 58453, 56040, 56044, 56045, 56046, 56047, 56048, 24400],
+    "阿里云":   [37963, 45102],
+    "腾讯云":   [45090, 133478, 132203],
+    "京东云":   [55966, 136800],
+    "字节跳动": [396986, 138699],
+    "网易":     [45062],
+    "中国电信": [4134, 4809, 4811, 4812, 4813, 4816, 4835, 23724, 4847, 58543],
+    "中国联通": [4837, 10099, 9929, 4808, 17621, 17622, 17623, 17816],
+    "中国移动": [9808, 58453, 56040, 56044, 56045, 56046, 56047, 56048, 24400],
 }
 
-# ── 域名关键词（用于 list a 宽泛匹配）──
+# ── 域名关键词（用于清单 a 宽泛匹配）──
 COMPANY_KEYWORDS = {
     "京东":        ["jd", "jingdong", "360buy", "jdcloud", "jcloud", "paipai", "jingxi"],
     "蚂蚁/支付宝": ["alipay", "ant", "alibaba", "aliyun", "taobao", "tmall",
@@ -142,7 +139,7 @@ COMPANY_KEYWORDS = {
     "腾讯":        ["tencent", "qq", "weixin", "wechat", "qcloud", "gtimg",
                    "qpic", "qlogo", "dnspod", "tencentmusic"],
     "网易":        ["netease", "163", "126", "youdao"],
-    "字节跳动":     ["bytedance", "douyin", "toutiao", "feishu", "volcengine",
+    "字节跳动":    ["bytedance", "douyin", "toutiao", "feishu", "volcengine",
                    "pstatp", "snssdk", "lark"],
     "运营商":      ["chinaunicom", "chinatelecom", "chinamobile", "10010",
                    "10086", "189", "unicom", "cmcc"],
@@ -152,7 +149,6 @@ VALID_DOMAIN_RE = re.compile(
     r'^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$'
 )
 
-# 是否打印被剔除的域名（调试用）
 VERBOSE = os.getenv("VERBOSE", "0") == "1"
 
 
@@ -185,14 +181,14 @@ def fetch_cn_domains():
 
 
 def fetch_asn_prefixes():
-#    """
-#     通过 RIPEstat Data API 获取各 ASN 的 IPv4 广播前缀
-#     API 端点: /data/announced-prefixes/data.json?resource=AS{asn}
-#     """
+    """
+    通过 RIPEstat Data API 获取各 ASN 的 IPv4 广播前缀
+    API 端点: /data/announced-prefixes/data.json?resource=AS{asn}
+    """
     print("  [4/4] 拉取 ASN IP 前缀 (RIPEstat)...")
     ip_entries = []
     seen = set()
- 
+
     for company, asns in COMPANY_ASNS.items():
         for asn in asns:
             url = f"{RIPESTAT_BASE}?resource=AS{asn}"
@@ -205,12 +201,12 @@ def fetch_asn_prefixes():
                 count = 0
                 for item in prefixes:
                     prefix = item.get("prefix", "")
-                      if not prefix or prefix in seen:
-                         continue
+                    if not prefix or prefix in seen:
+                        continue
 
-                    # 仅保留 IPv4 前缀（IPv6 前缀数量过大，保留规则已覆盖关键 IPv6 段）
+                    # 仅保留 IPv4 前缀
                     try:
-                       net = ipaddress.ip_network(prefix, strict=False)
+                        net = ipaddress.ip_network(prefix, strict=False)
                         if net.version != 4:
                             continue
                     except ValueError:
@@ -222,14 +218,18 @@ def fetch_asn_prefixes():
                         "description": f"{company} IP"
                     })
                     count += 1
-                 print(f"        AS{asn} ({company}): {count} 条 IPv4 前缀")
+
+                print(f"        AS{asn} ({company}): {count} 条 IPv4 前缀")
             except Exception as e:
                 print(f"        AS{asn} ({company}): 获取失败 - {e}")
-             time.sleep(0.5)  # RIPEstat 速率控制
-     print(f"        IP 清单合计: {len(ip_entries)} 条（已去重）")
+
+            time.sleep(0.5)  # RIPEstat 速率控制
+
+    print(f"        IP 清单合计: {len(ip_entries)} 条（已去重）")
     if len(ip_entries) + len(PRESERVED_RULES) > 4000:
         print(f"  ⚠  IP 前缀数量较多，脚本 B 写入 Cloudflare 时将截断至 4000 条")
     return ip_entries
+
 
 # ════════════════════════════════════════════
 # 域名过滤
@@ -309,6 +309,24 @@ def validate_domains_phase_b(domains_a):
 # GitHub 上传
 # ════════════════════════════════════════════
 
+def get_default_branch():
+    """通过 GitHub API 获取仓库默认分支"""
+    if not GITHUB_REPO:
+        return "main"
+    url = f"https://api.github.com/repos/{GITHUB_REPO}"
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github+json"
+    }
+    try:
+        resp = requests.get(url, headers=headers, timeout=TIMEOUT)
+        if resp.status_code == 200:
+            return resp.json().get("default_branch", "main")
+    except Exception:
+        pass
+    return "main"
+
+
 def save_to_github(content):
     """将规则 JSON 保存到 GitHub 仓库 cf_spilit_channel.txt"""
     if not GITHUB_TOKEN or not GITHUB_REPO:
@@ -318,6 +336,9 @@ def save_to_github(content):
             f.write(content)
         print(f"  ✅ 已保存到本地: {local_path}")
         return
+
+    branch = GITHUB_BRANCH or get_default_branch()
+    print(f"  → 目标分支: {branch}")
 
     api_url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{GITHUB_FILE_PATH}"
     headers = {
@@ -340,14 +361,14 @@ def save_to_github(content):
     body = {
         "message": f"Auto-update cf_spilit_channel.txt @ {now_str}",
         "content": encoded,
-        "branch": GITHUB_BRANCH,
+        "branch": branch,
     }
     if sha:
         body["sha"] = sha
 
     resp = requests.put(api_url, json=body, headers=headers, timeout=TIMEOUT)
     if resp.status_code in (200, 201):
-        raw_url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/{GITHUB_BRANCH}/{GITHUB_FILE_PATH}"
+        raw_url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/{branch}/{GITHUB_FILE_PATH}"
         print(f"  ✅ 已上传到 GitHub: {raw_url}")
     else:
         print(f"  ❌ GitHub 上传失败 {resp.status_code}: {resp.text}")
@@ -374,10 +395,11 @@ def main():
 
     # 4. 拉取 ASN IP 前缀
     # ip_entries = fetch_asn_prefixes()
+    ip_entries = “”
 
     # 5. 拼接最终规则: 保留规则 + 域名清单 b + IP 清单
     print("\n  拼接最终规则...")
-    final_rules = PRESERVED_RULES + domains_b + ip_entries
+    # final_rules = PRESERVED_RULES + domains_b + ip_entries
     print(f"  保留规则:  {len(PRESERVED_RULES):>6} 条")
     print(f"  域名规则:  {len(domains_b):>6} 条")
     print(f"  IP 规则:   {len(ip_entries):>6} 条")
