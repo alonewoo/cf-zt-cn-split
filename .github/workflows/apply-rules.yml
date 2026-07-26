@@ -1,0 +1,36 @@
+# .github/workflows/apply-rules.yml
+name: Apply Rules to Cloudflare
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '0 4 * * *'
+
+jobs:
+  apply:
+    name: Apply Rules to Cloudflare (Script B)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Script B - Apply to Cloudflare
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_PROFILE_ID: ${{ secrets.CF_PROFILE_ID }}
+          MODE: ${{ secrets.MODE }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GITHUB_REPO: ${{ secrets.REPO_NAME }}
+          GITHUB_RAW_URL: ${{ secrets.RULES_FILE_URL }}
+        run: python apply_rules.py
