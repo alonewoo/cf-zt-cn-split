@@ -396,6 +396,10 @@
     "description": "银行/保险/政府 Domain"
   },
   {
+    "host": "*.cnipa.gov.cn",
+    "description": "银行/保险/政府 Domain"
+  },
+  {
     "host": "*.tmall.hk",
     "description": "蚂蚁/支付宝 Domain"
   },
